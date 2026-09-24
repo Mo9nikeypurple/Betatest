@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" style="position:fixed;inset:0;background:#000;">
+  <foreignObject x="0" y="0" width="100%" height="100%">
+    <html xmlns="http://www.w3.org/1999/xhtml" style="width:100%;height:100%;margin:0;padding:0;background:#000;">
+      <head>
+        <meta charset="UTF-8"/>
+        <title>Mac OS</title>
+        <style>
+          /* <![CDATA[ */
+          html, body { margin:0; padding:0; width:100%; height:100%; overflow:hidden; background:#000; }
+          iframe { position:absolute; top:0; left:0; width:100%; height:100%; border:none; background:#000; }
+          #status { color:#fff; font-family:system-ui,sans-serif; padding:20px; }
+          /* ]]> */
+        </style>
+      </head>
+      <body>
+        <p id="status">Loading Mac OS…</p>
+        <script>
+        //<![CDATA[
+          (async function () {
+            var base = "https://fastly.jsdelivr.net/gh/Mo9nikeypurple/skool@main/";
+            var url = base + "index.html?t=" + Date.now();
+            var XHTML = "http://www.w3.org/1999/xhtml";
+            var body = document.body || document.getElementsByTagName("body")[0] || document.documentElement;
+            var status = document.getElementById("status");
+            function setStatus(msg) { if (status) status.textContent = msg; }
+
+            var WORKING_SERVERS = [
+              "wss://wisp.mercurywork.shop/",
+              "wss://wisp.mercurywork.shop/wisp/",
+              "wss://anura.pro/",
+              "wss://wisp.terbiumon.top/wisp/",
+              "wss://wisp.smartfoloo.space/",
+              "wss://kristenblackburnvolleyballcamps.com/socket/"
+            ];
+
+            var tikTokPatch =
+              "(function(){try{" +
+              "var servers=" + JSON.stringify(WORKING_SERVERS) + ";" +
+              "try{localStorage.setItem('nyx_wisp',servers[0]);}catch(e){}" +
+              "window.__nyxPreferWisp=servers;" +
+              "try{if(typeof window.setWispServer==='function')window.setWispServer(servers[0]);}catch(e){}" +
+              "function isTikTok(u){try{var h=new URL(u).hostname.replace(/^www\\./,'');return /(^|\\.)tiktok\\.com$/i.test(h)||/(^|\\.)tiktokv\\.com$/i.test(h);}catch(e){return /tiktok\\.com/i.test(String(u||''));}}" +
+              "function openTikTokProxied(u){" +
+              "u=u||'https://www.tiktok.com/';" +
+              "try{if(typeof openSafari==='function')openSafari();}catch(e){}" +
+              "if(typeof nyxOpenProxied==='function'){return Promise.resolve(nyxOpenProxied(u,'TikTok'));}" +
+              "try{if(typeof nyxEnsureScramjet==='function')nyxEnsureScramjet();}catch(e){}" +
+              "setTimeout(function(){try{var fr=document.getElementById('safari-frame');if(fr&&fr.contentWindow){fr.contentWindow.postMessage({type:'safari-navigate',url:u},'*');}var input=document.getElementById('safari-url');if(input)input.value='tiktok.com';}catch(e){}},400);" +
+              "return Promise.resolve(true);}" +
+              "window.openTikTokProxied=openTikTokProxied;" +
+              "document.addEventListener('click',function(e){" +
+              "var t=e.target&&e.target.closest&&e.target.closest('.open-tiktok,[data-keywords=\"TikTok\"]');" +
+              "if(!t)return;e.preventDefault();e.stopPropagation();" +
+              "try{var lp=document.getElementById('launchpad');if(lp)lp.style.display='none';}catch(err){}" +
+              "openTikTokProxied('https://www.tiktok.com/');},true);" +
+              "window.addEventListener('message',function(ev){" +
+              "var d=ev&&ev.data;if(!d||d.type!=='safari-navigate'||!d.url)return;" +
+              "if(!isTikTok(d.url)||d.__nyxTikTokHandled)return;" +
+              "d.__nyxTikTokHandled=true;openTikTokProxied(d.url);},true);" +
+              "setTimeout(function(){try{if(typeof nyxEnsureScramjet==='function')nyxEnsureScramjet();}catch(e){}},1200);" +
+              "}catch(e){console.warn('tiktok patch',e);}})();";
+
+            function patchHtml(html) {
+              var parts = WORKING_SERVERS.map(function (s) { return '\\"' + s + '\\"'; });
+              var newServers = "const SERVERS = [\\n    " + parts.join(",\\n    ") + "\\n  ];";
+              html = html.replace(/const SERVERS = \[[\s\S]*?\];/, newServers);
+              var presetParts = WORKING_SERVERS.map(function (s) { return '"' + s + '"'; });
+              html = html.replace(/WISP_PRESETS\s*=\s*\[[\s\S]*?\];/, "WISP_PRESETS = [\n        " + presetParts.join(",\n        ") + "\n      ];");
+              var inj = "<script>" + tikTokPatch + "<\/script>";
+              if (/<\/body>/i.test(html)) html = html.replace(/<\/body>/i, inj + "\n</body>");
+              else html += inj;
+              return html;
+            }
+
+            try {
+              setStatus("Fetching Mac OS…");
+              var res = await fetch(url, { cache: "no-store" });
+              if (!res.ok) throw new Error("HTTP " + res.status);
+              setStatus("Patching proxy…");
+              var html = await res.text();
+              html = html.replace(/<head[^>]*>/i, function (m) {
+                return m + '\n    <base href="' + base + '">';
+              });
+              try { html = patchHtml(html); } catch (e) { console.warn("patch failed", e); }
+              setStatus("Starting…");
+              var iframe = document.createElementNS(XHTML, "iframe");
+              iframe.setAttribute("style", "position:absolute;top:0;left:0;width:100%;height:100%;border:none;background:#000;");
+              iframe.setAttribute("allow", "fullscreen; autoplay; encrypted-media; picture-in-picture; clipboard-read; clipboard-write");
+              var blob = new Blob([html], { type: "text/html" });
+              iframe.setAttribute("src", URL.createObjectURL(blob));
+              if (!body) throw new Error("No body element found");
+              body.appendChild(iframe);
+              if (status) status.style.display = "none";
+            } catch (err) {
+              setStatus("Failed to load: " + ((err && err.message) ? err.message : String(err)));
+              console.error(err);
+            }
+          })();
+        //]]>
+        </script>
+      </body>
+    </html>
+  </foreignObject>
+</svg>
